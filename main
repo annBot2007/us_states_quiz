@@ -1,0 +1,58 @@
+import turtle
+import pandas
+
+data = pandas.read_csv("50_states.csv")
+states_names = data["state_name"] # saves the 50 states from the csv file in a list
+
+screen = turtle.Screen()
+screen.setup(width=800, height=600)
+screen.title("US States Game")
+
+image = "blank_states_img.gif"
+
+screen.addshape(image)
+turtle.shape(image)
+
+is_game_on = True
+score = 0
+prompt_text = "Guess the state: "
+guessed_states = []
+
+while is_game_on:
+    answer_state = screen.textinput(title=prompt_text, prompt = f"{score}/50 states guessed")
+    guess = answer_state.title()
+    if guess in states_names.values:
+        if guess in guessed_states:
+            prompt_text = f"You already guessed {guess}"
+        else:
+            t = turtle.Turtle()
+            t.hideturtle()
+            t.penup()
+            state_data = data[data.state_name == guess]
+            t.goto(state_data.x.item(), state_data.y.item())
+            t.write(guess, align = 'left', font=('Times New Roman', 10, 'bold'))
+            prompt_text = f"Guess the state: "
+
+            guessed_states.append(guess)
+            score += 1
+    elif guess == "Exit":
+        missing_states = []
+
+        for state in states_names:
+            if state not in guessed_states:
+                missing_states.append(state)
+            new_data = pandas.DataFrame(missing_states)
+            new_data.to_csv("states_to_learn.csv")
+        break
+    else:
+        prompt_text = f"{guess} is not a US state! Guess again!"
+
+    if score == 50:
+        end_card = turtle.Turtle()
+        end_card.hideturtle()
+        end_card.penup()
+        end_card.goto(0, 250)
+        end_card.write("CONGRATS! YOU GUESSED ALL THE 50 STATES!", align = 'center', font=('Times New Roman', 15, 'bold italic'))
+        is_game_on = False
+
+screen.exitonclick()
